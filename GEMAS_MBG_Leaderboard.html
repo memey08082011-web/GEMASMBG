@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GEMAS MBG - Berat Sampah Organik</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'custom-yellow-light': '#FFFEA0',
+                        'custom-pastel-bg': '#F0F7EA',
+                        'custom-gold': '#EEE59F',
+                        'custom-green-pastel': '#AAD480',
+                        'custom-green-fresh': '#75C97F',
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #F0F7EA;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        /* Custom smooth scroll and touch optimizations */
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-[#F0F7EA] text-slate-800 min-h-screen flex flex-col justify-between selection:bg-[#AAD480]">
+
+    <!-- Main Container -->
+    <div class="max-w-md mx-auto w-full bg-[#F0F7EA] min-h-screen flex flex-col shadow-xl relative overflow-hidden pb-12">
+        
+        <!-- Header Section -->
+        <header class="bg-gradient-to-b from-[#FFFEA0] to-[#EEE59F] pt-6 pb-6 px-6 rounded-b-[2.5rem] shadow-sm relative">
+            <div class="flex justify-between items-center mb-2">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#75C97F]/20 text-[#2C6A34] text-xs font-bold tracking-wide uppercase">
+                    <i class="fa-solid fa-leaf text-[#75C97F]"></i> Eco Challenge
+                </span>
+                <!-- Hidden Admin Button Trigger -->
+                <button id="adminTriggerBtn" onclick="openLoginModal()" class="w-10 h-10 rounded-full bg-white/70 hover:bg-white flex items-center justify-center text-slate-600 transition active:scale-95 shadow-sm" title="Admin Login">
+                    <i id="adminIconState" class="fa-solid fa-lock text-sm"></i>
+                </button>
+            </div>
+            
+            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight mt-1">GEMAS MBG</h1>
+            <p class="text-sm font-medium text-slate-700 mt-1 leading-snug">Berat sampah mbg organik yang sudah dipilah</p>
+            
+            <!-- Quick Summary Card inside Header -->
+            <div class="mt-5 bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-sm border border-[#AAD480]/30 flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-semibold text-slate-500 block">Total Semua Angkatan</span>
+                    <h2 class="text-2xl font-black text-[#2C6A34] mt-0.5" id="grandTotalScore">0.0 <span class="text-sm font-bold text-slate-600">Kg</span></h2>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-[#75C97F]/20 flex items-center justify-center text-[#2C6A34] text-xl">
+                    <i class="fa-solid fa-scale-balanced"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs for Grades (X, XI, XII) -->
+        <div class="px-6 mt-6">
+            <div class="flex bg-[#EEE59F]/50 p-1.5 rounded-2xl shadow-inner gap-1">
+                <button onclick="switchGrade('X')" id="tab-X" class="flex-1 py-2.5 rounded-xl font-bold text-sm transition-all text-slate-700">Kelas X</button>
+                <button onclick="switchGrade('XI')" id="tab-XI" class="flex-1 py-2.5 rounded-xl font-bold text-sm transition-all text-slate-700">Kelas XI</button>
+                <button onclick="switchGrade('XII')" id="tab-XII" class="flex-1 py-2.5 rounded-xl font-bold text-sm transition-all text-slate-700">Kelas XII</button>
+            </div>
+        </div>
+
+        <!-- Grade Stats & Info banner -->
+        <div class="px-6 mt-4 flex items-center justify-between">
+            <div>
+                <h3 id="currentGradeTitle" class="text-lg font-bold text-slate-800">Angkatan X</h3>
+                <p id="currentGradeSubtitle" class="text-xs text-slate-500">Total 11 Kelas • Tap pensil untuk update (Admin)</p>
+            </div>
+            <div id="adminBadge" class="hidden px-2.5 py-1 bg-[#75C97F] text-white text-xs font-bold rounded-lg shadow-sm animate-pulse">
+                Mode Admin Aktif ✨
+            </div>
+        </div>
+
+        <!-- Class Cards Container -->
+        <main class="px-6 mt-3 flex-1">
+            <div id="classListContainer" class="space-y-3">
+                <!-- Dynamically populated via JS -->
+            </div>
+        </main>
+
+        <!-- Footer Note -->
+        <footer class="mt-8 px-6 text-center">
+            <p class="text-xs text-slate-500 font-medium">GEMAS MBG • Peduli Sampah Organik Sekolah 🌱</p>
+            <button onclick="logoutAdmin()" id="logoutBtn" class="hidden mt-2 text-xs font-bold text-red-500 hover:underline">Keluar Mode Admin</button>
+        </footer>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-6 hidden">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl border border-slate-100 transform transition-all scale-95 opacity-0" id="loginModalContent">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-key text-[#75C97F]"></i> Login Admin
+                </h3>
+                <button onclick="closeLoginModal()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-500 mb-4">Masukkan password khusus untuk mengedit berat sampah organik kelas.</p>
+            
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Password Admin</label>
+                    <input type="password" id="adminPasswordInput" placeholder="••••••••••" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#75C97F] text-sm bg-slate-50">
+                </div>
+                <div id="loginErrorMsg" class="text-xs text-red-500 font-medium hidden">Password salah cuy! Coba lagi ya.</div>
+                <button onclick="handleAdminLogin()" class="w-full py-3 bg-[#75C97F] hover:bg-[#62b06c] text-white font-bold rounded-xl shadow-md transition active:scale-[0.98] text-sm">
+                    Masuk Sekarang
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Score Modal (Keyboard Input Only) -->
+    <div id="editModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-6 hidden">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl border border-slate-100 transform transition-all scale-95 opacity-0" id="editModalContent">
+            <div class="flex justify-between items-center mb-3">
+                <h3 id="editModalTitle" class="text-lg font-bold text-slate-800">Edit Kelas</h3>
+                <button onclick="closeEditModal()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-500 mb-4">Ketik berat sampah organik terbaru menggunakan keyboard HP kamu (dalam Kilogram).</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Berat Sampah (Kg)</label>
+                    <div class="relative">
+                        <!-- Using number type with step allow decimals, keyboard input enabled directly -->
+                        <input type="number" step="0.1" min="0" id="scoreInput" placeholder="Contoh: 12.5" class="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#75C97F] text-lg font-bold bg-slate-50">
+                        <span class="absolute right-4 top-3.5 text-sm font-bold text-slate-400">Kg</span>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="closeEditModal()" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-sm transition">Batal</button>
+                    <button onclick="saveScore()" class="flex-1 py-3 bg-[#75C97F] hover:bg-[#62b06c] text-white font-bold rounded-xl shadow-md transition text-sm">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Notification Toast -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900/95 text-white px-5 py-3 rounded-2xl shadow-xl text-xs font-medium z-50 flex items-center gap-2.5 transition-all duration-300 translate-y-20 opacity-0 pointer-events-none">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-[#75C97F]"></i>
+        <span id="toastMessage">Berhasil disimpan!</span>
+    </div>
+
+    <!-- Application JavaScript Logic -->
+    <script>
+        // State Management
+        let currentGrade = 'X';
+        let isAdmin = localStorage.getItem('gemas_mbg_admin') === 'true';
+        let activeEditClassKey = null;
+
+        // Data structure: 3 grades, each with 11 classes
+        // Initializing data in localStorage if not exists
+        function initializeData() {
+            if (!localStorage.getItem('gemas_mbg_data')) {
+                const initialData = {};
+                ['X', 'XI', 'XII'].forEach(grade => {
+                    initialData[grade] = {};
+                    for (let i = 1; i <= 11; i++) {
+                        initialData[grade][`${grade}-${i}`] = {
+                            name: `${grade} - ${i}`,
+                            score: 0.0
+                        };
+                    }
+                });
+                localStorage.setItem('gemas_mbg_data', JSON.stringify(initialData));
+            }
+        }
+
+        // Get Data from LocalStorage
+        function getData() {
+            return JSON.parse(localStorage.getItem('gemas_mbg_data'));
+        }
+
+        // Save Data to LocalStorage
+        function saveData(data) {
+            localStorage.setItem('gemas_mbg_data', JSON.stringify(data));
+            renderApp();
+        }
+
+        // Switch Grade Tab
+        function switchGrade(grade) {
+            currentGrade = grade;
+            ['X', 'XI', 'XII'].forEach(g => {
+                const btn = document.getElementById(`tab-${g}`);
+                if (g === grade) {
+                    btn.className = "flex-1 py-2.5 rounded-xl font-bold text-sm transition-all bg-white shadow-sm text-[#2C6A34]";
+                } else {
+                    btn.className = "flex-1 py-2.5 rounded-xl font-bold text-sm transition-all text-slate-600 hover:text-slate-900";
+                }
+            });
+            document.getElementById('currentGradeTitle').innerText = `Angkatan ${grade}`;
+            renderClassList();
+        }
+
+        // Calculate Grand Total across all classes
+        function calculateGrandTotal(data) {
+            let total = 0;
+            ['X', 'XI', 'XII'].forEach(grade => {
+                for (let key in data[grade]) {
+                    total += parseFloat(data[grade][key].score) || 0;
+                }
+            });
+            return total.toFixed(1);
+        }
+
+        // Render entire UI
+        function renderApp() {
+            const data = getData();
+            
+            // Grand Total
+            document.getElementById('grandTotalScore').innerHTML = `${calculateGrandTotal(data)} <span class="text-sm font-bold text-slate-600">Kg</span>`;
+
+            // Admin UI states
+            const adminBadge = document.getElementById('adminBadge');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const adminIconState = document.getElementById('adminIconState');
+
+            if (isAdmin) {
+                adminBadge.classList.remove('hidden');
+                logoutBtn.classList.remove('hidden');
+                adminIconState.className = "fa-solid fa-lock-open text-sm text-[#75C97F]";
+            } else {
+                adminBadge.classList.add('hidden');
+                logoutBtn.classList.add('hidden');
+                adminIconState.className = "fa-solid fa-lock text-sm";
+            }
+
+            renderClassList();
+        }
+
+        // Render Class List for current grade
+        function renderClassList() {
+            const data = getData();
+            const container = document.getElementById('classListContainer');
+            container.innerHTML = '';
+
+            const gradeClasses = data[currentGrade];
+            
+            // Convert to array and sort by score descending for a leaderboard vibe
+            const classArray = Object.keys(gradeClasses).map(key => ({
+                key: key,
+                ...gradeClasses[key]
+            })).sort((a, b) => b.score - a.score);
+
+            classArray.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-2xl shadow-sm border border-[#AAD480]/20 flex items-center justify-between transition-all hover:shadow-md";
+                
+                // Rank styling badge
+                let rankBadgeBg = "bg-slate-100 text-slate-600";
+                if (index === 0) rankBadgeBg = "bg-[#FFFEA0] text-amber-800 border border-[#EEE59F]";
+                else if (index === 1) rankBadgeBg = "bg-slate-200 text-slate-700";
+                else if (index === 2) rankBadgeBg = "bg-amber-100 text-amber-900";
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-8 h-8 rounded-xl ${rankBadgeBg} font-black text-xs flex items-center justify-center shadow-2xs">
+                            #${index + 1}
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-base">Kelas ${item.name}</h4>
+                            <span class="text-xs text-slate-400 font-medium">Sampah Organik Terkumpul</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="text-right">
+                            <span class="text-lg font-black text-[#2C6A34]">${parseFloat(item.score).toFixed(1)}</span>
+                            <span class="text-xs font-bold text-slate-500"> Kg</span>
+                        </div>
+                        ${isAdmin ? `
+                            <button onclick="openEditModal('${item.key}', ${item.score})" class="w-9 h-9 rounded-xl bg-[#AAD480]/20 hover:bg-[#AAD480]/40 text-[#2C6A34] flex items-center justify-center transition active:scale-95 shadow-2xs" title="Edit Skor">
+                                <i class="fa-solid fa-pen text-xs"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Login Modal Management
+        function openLoginModal() {
+            if (isAdmin) {
+                showToast("Kamu sudah login sebagai Admin!", "success");
+                return;
+            }
+            const modal = document.getElementById('loginModal');
+            const content = document.getElementById('loginModalContent');
+            modal.classList.remove('hidden');
+            document.getElementById('adminPasswordInput').value = '';
+            document.getElementById('loginErrorMsg').classList.add('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeLoginModal() {
+            const modal = document.getElementById('loginModal');
+            const content = document.getElementById('loginModalContent');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        function handleAdminLogin() {
+            const pass = document.getElementById('adminPasswordInput').value;
+            if (pass === "Penghuni7") {
+                isAdmin = true;
+                localStorage.setItem('gemas_mbg_data_admin', 'true'); // optional tracking
+                localStorage.setItem('gemas_mbg_admin', 'true');
+                closeLoginModal();
+                renderApp();
+                showToast("Berhasil masuk sebagai Admin ✨", "success");
+            } else {
+                document.getElementById('loginErrorMsg').classList.remove('hidden');
+            }
+        }
+
+        function logoutAdmin() {
+            isAdmin = false;
+            localStorage.removeItem('gemas_mbg_admin');
+            renderApp();
+            showToast("Keluar dari mode admin", "info");
+        }
+
+        // Edit Score Modal Management
+        function openEditModal(classKey, currentScore) {
+            activeEditClassKey = classKey;
+            const modal = document.getElementById('editModal');
+            const content = document.getElementById('editModalContent');
+            const data = getData();
+            
+            // Find class name
+            let className = classKey;
+            ['X', 'XI', 'XII'].forEach(g => {
+                if (data[g][classKey]) className = data[g][classKey].name;
+            });
+
+            document.getElementById('editModalTitle').innerText = `Edit Kelas ${className}`;
+            document.getElementById('scoreInput').value = currentScore;
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+                document.getElementById('scoreInput').focus();
+            }, 10);
+        }
+
+        function closeEditModal() {
+            const modal = document.getElementById('editModal');
+            const content = document.getElementById('editModalContent');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                activeEditClassKey = null;
+            }, 200);
+        }
+
+        function saveScore() {
+            const val = document.getElementById('scoreInput').value;
+            if (val === '' || isNaN(val) || parseFloat(val) < 0) {
+                showToast("Masukkan angka berat yang valid!", "error");
+                return;
+            }
+
+            const data = getData();
+            // Update score in active grade
+            if (data[currentGrade][activeEditClassKey]) {
+                data[currentGrade][activeEditClassKey].score = parseFloat(val);
+                saveData(data);
+                closeEditModal();
+                showToast("Berat sampah berhasil diperbarui! 🎉", "success");
+            }
+        }
+
+        // Toast Notification Helper
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMessage.innerText = message;
+            if (type === 'success') {
+                toastIcon.className = "fa-solid fa-circle-check text-[#75C97F]";
+            } else if (type === 'error') {
+                toastIcon.className = "fa-solid fa-triangle-exclamation text-red-400";
+            } else {
+                toastIcon.className = "fa-solid fa-circle-info text-sky-400";
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+
+        // Initializer on load
+        window.onload = function() {
+            initializeData();
+            switchGrade('X');
+            renderApp();
+        };
+    </script>
+</body>
+</html>
